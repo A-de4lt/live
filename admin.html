@@ -1,70 +1,130 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>后台管理中心</title>
+    <title>管理后台 - 控制中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="auth.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <!-- 导航栏 -->
-    <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
-        <span class="font-bold text-xl">管理系统后台</span>
-        <button onclick="logout()" class="text-sm bg-red-500 px-3 py-1 rounded">退出</button>
+<body class="bg-gray-100">
+    <nav class="bg-slate-800 text-white p-4 shadow-lg flex justify-between">
+        <h2 class="font-bold">系统管理后台</h2>
+        <button onclick="sessionStorage.clear(); window.location.href='index.html'" class="bg-red-500 px-3 py-1 rounded text-sm">退出登录</button>
     </nav>
 
-    <div class="p-8">
-        <!-- 统计卡片 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
-            <div class="bg-white p-6 rounded shadow"><h3 class="text-gray-500">总用户数</h3><p id="totalCount" class="text-3xl font-bold">0</p></div>
-            <div class="bg-white p-6 rounded shadow"><h3 class="text-gray-500">系统状态</h3><p class="text-3xl font-bold text-green-500">正常</p></div>
-            <div class="bg-white p-6 rounded shadow"><h3 class="text-gray-500">数据权重</h3><p class="text-3xl font-bold text-blue-500">100%</p></div>
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- 统计栏 -->
+        <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
+                <h4 class="text-gray-500 text-sm">总用户数</h4>
+                <p id="totalUsers" class="text-2xl font-bold">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+                <h4 class="text-gray-500 text-sm">系统状态</h4>
+                <p class="text-2xl font-bold text-green-600">运行中</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow border-l-4 border-purple-500">
+                <h4 class="text-gray-500 text-sm">存储模式</h4>
+                <p class="text-2xl font-bold">LocalStorage</p>
+            </div>
         </div>
 
-        <!-- 管理操作 -->
-        <div class="bg-white p-6 rounded shadow">
-            <h3 class="text-lg font-bold mb-4">用户列表及管理</h3>
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-gray-50">
-                        <th class="p-3 border">ID</th><th class="p-3 border">用户名</th><th class="p-3 border">角色</th><th class="p-3 border">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="userTable"></tbody>
-            </table>
+        <div class="grid grid-cols-3 gap-8">
+            <!-- 添加用户表单 -->
+            <div class="bg-white p-6 rounded-lg shadow col-span-1">
+                <h3 class="font-bold mb-4 border-b pb-2">添加新用户</h3>
+                <div class="space-y-4">
+                    <input type="text" id="newUsername" placeholder="用户名" class="w-full border p-2 rounded">
+                    <input type="password" id="newPassword" placeholder="设置密码" class="w-full border p-2 rounded">
+                    <select id="newRole" class="w-full border p-2 rounded text-gray-600">
+                        <option value="user">普通用户</option>
+                        <option value="admin">子管理员</option>
+                    </select>
+                    <button onclick="addUser()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">确认添加</button>
+                </div>
+            </div>
+
+            <!-- 用户列表 -->
+            <div class="bg-white p-6 rounded-lg shadow col-span-2">
+                <h3 class="font-bold mb-4 border-b pb-2">用户账号管理</h3>
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-gray-400 text-sm border-b">
+                            <th class="py-2">用户名</th>
+                            <th>角色</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- JS 动态渲染 -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
-        // 鉴权
-        const user = getCurrentUser();
-        if (!user || user.role !== 'admin') window.location.href = 'index.html';
+        // 权限检查
+        checkAuth('admin');
 
-        function render() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            document.getElementById('totalCount').innerText = users.length;
-            const html = users.map(u => `
-                <tr>
-                    <td class="p-3 border">${u.id}</td>
-                    <td class="p-3 border">${u.username}</td>
-                    <td class="p-3 border">${u.role}</td>
-                    <td class="p-3 border">
-                        <button onclick="delUser(${u.id})" class="text-red-500">删除</button>
+        function loadUsers() {
+            const users = JSON.parse(localStorage.getItem('platform_users'));
+            document.getElementById('totalUsers').innerText = users.length;
+            
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = users.map(u => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="py-3 font-medium">${u.username}</td>
+                    <td><span class="px-2 py-1 rounded text-xs ${u.role==='admin'?'bg-purple-100 text-purple-700':'bg-gray-100'}">${u.role}</span></td>
+                    <td class="text-gray-500 text-sm">${u.createTime || '-'}</td>
+                    <td>
+                        ${u.username === 'admin' ? '-' : `<button onclick="deleteUser(${u.id})" class="text-red-500 hover:underline">删除</button>`}
                     </td>
                 </tr>
             `).join('');
-            document.getElementById('userTable').innerHTML = html;
         }
 
-        window.delUser = (id) => {
-            if (id === 1) return alert('不能删除超级管理员');
-            let users = JSON.parse(localStorage.getItem('users'));
-            users = users.filter(u => u.id !== id);
-            localStorage.setItem('users', JSON.stringify(users));
-            render();
-        };
+        function addUser() {
+            const u = document.getElementById('newUsername').value;
+            const p = document.getElementById('newPassword').value;
+            const r = document.getElementById('newRole').value;
 
-        render();
+            if(!u || !p) return alert("请填写完整信息");
+
+            let users = JSON.parse(localStorage.getItem('platform_users'));
+            
+            // 检查重名
+            if(users.some(x => x.username === u)) return alert("用户名已存在");
+
+            const newUser = {
+                id: Date.now(),
+                username: u,
+                password: p,
+                role: r,
+                createTime: new Date().toLocaleString()
+            };
+
+            users.push(newUser);
+            localStorage.setItem('platform_users', JSON.stringify(users));
+            loadUsers(); // 刷新列表
+            
+            // 清空输入
+            document.getElementById('newUsername').value = "";
+            document.getElementById('newPassword').value = "";
+        }
+
+        function deleteUser(id) {
+            if(confirm("确定要删除该账号吗？")) {
+                let users = JSON.parse(localStorage.getItem('platform_users'));
+                users = users.filter(x => x.id !== id);
+                localStorage.setItem('platform_users', JSON.stringify(users));
+                loadUsers();
+            }
+        }
+
+        // 页面加载时执行
+        loadUsers();
     </script>
 </body>
 </html>
