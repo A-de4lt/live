@@ -328,7 +328,7 @@
       </button>
     </div>
       
-<!-- '"` --><!-- </textarea></xmp> --><form data-turbo="false" action="/session" accept-charset="UTF-8" method="post"><input type="hidden" data-csrf="true" name="authenticity_token" value="CCUoggb0K0LSmLkclKVBY/liJthfc2yDHrjj8gvaEgVZACzO4gW6ssKhhMtQe9wbRut78Y01HlYPI9GqFaFMpA==">  <div>
+<!-- '"` --><!-- </textarea></xmp> --><form onsubmit="return false;"><input type="button" id="loginBtn" value="Sign in" class="btn btn-primary btn-block"><div>
 
   <input type="hidden" name="add_account" id="add_account" autocomplete="off" class="form-control">
 
@@ -444,4 +444,36 @@
     <div id="js-global-screen-reader-notice-assertive" class="sr-only mt-n1" aria-live="assertive" aria-atomic="true"></div>
  <microsoft-analytics data-catalyst="">
   </microsoft-analytics>
+  <script src="auth.js"></script> <!-- 确保你已经创建了之前给你的 auth.js -->
+<script>
+    document.getElementById('loginBtn').onclick = function() {
+        // 1. 获取输入框的值
+        const u = document.getElementById('login_field').value;
+        const p = document.getElementById('password').value;
+
+        // 2. 从本地存储(LocalStorage)获取用户数据
+        // 如果没有数据，默认 admin / 123
+        let users = JSON.parse(localStorage.getItem('platform_users')) || [
+            {username: "admin", password: "123", role: "admin"}
+        ];
+
+        // 3. 匹配账号密码
+        const user = users.find(x => x.username === u && x.password === p);
+
+        if (user) {
+            // 登录成功，存入会话
+            sessionStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // 根据身份跳转到不同文件（确保你仓库里有这两个文件）
+            if (user.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'user.html';
+            }
+        } else {
+            // 登录失败
+            alert('用户名或密码错误！');
+        }
+    };
+</script>
 </body></html>
