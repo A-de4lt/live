@@ -1,21 +1,28 @@
-// 初始化模拟数据库
-const initDatabase = () => {
-    if (!localStorage.getItem('users')) {
-        const defaultUsers = [
-            { id: 1, username: 'admin', password: '123', role: 'admin', createTime: '2023-01-01' },
-            { id: 2, username: 'user1', password: '123', role: 'user', createTime: '2023-05-20' }
+// 初始化数据库：如果没有数据，则创建默认管理员
+function initSystem() {
+    if (!localStorage.getItem('platform_users')) {
+        const initialData = [
+            {
+                id: 1001,
+                username: "admin",
+                password: "123", // 默认密码
+                role: "admin",
+                createTime: new Date().toLocaleString()
+            }
         ];
-        localStorage.setItem('users', JSON.stringify(defaultUsers));
+        localStorage.setItem('platform_users', JSON.stringify(initialData));
+        console.log("系统初始化成功：管理员账号 admin 已创建");
     }
-};
+}
 
-// 获取当前登录用户
-const getCurrentUser = () => JSON.parse(sessionStorage.getItem('currentUser'));
+// 检查登录权限 (用于后台页面防止非法进入)
+function checkAuth(requiredRole) {
+    const user = JSON.parse(sessionStorage.getItem('currentUser'));
+    if (!user || user.role !== requiredRole) {
+        alert("未经授权，请先登录");
+        window.location.href = 'index.html';
+    }
+    return user;
+}
 
-// 退出登录
-const logout = () => {
-    sessionStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
-};
-
-initDatabase();
+initSystem();
