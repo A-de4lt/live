@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="auth.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
+        <span class="font-bold text-xl">管理系统后台</span>
+        <button onclick="logout()" class="text-sm bg-red-500 px-3 py-1 rounded">退出</button>
+    </nav>
+
+    <div class="p-8">
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
+            <div class="bg-white p-6 rounded shadow"><h3 class="text-gray-500">总用户数</h3><p id="totalCount" class="text-3xl font-bold">0</p></div>
+            <div class="bg-white p-6 rounded shadow"><h3 class="text-gray-500">系统状态</h3><p class="text-3xl font-bold text-green-500">正常</p></div>
+            <div class="bg-white p-6 rounded shadow"><h3 class="text-gray-500">数据权重</h3><p class="text-3xl font-bold text-blue-500">100%</p></div>
+        </div>
+
+        <!-- 管理操作 -->
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="text-lg font-bold mb-4">用户列表及管理</h3>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="p-3 border">ID</th><th class="p-3 border">用户名</th><th class="p-3 border">角色</th><th class="p-3 border">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 鉴权
+        const user = getCurrentUser();
+        if (!user || user.role !== 'admin') window.location.href = 'index.html';
+
+        function render() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            document.getElementById('totalCount').innerText = users.length;
+            const html = users.map(u => `
+                <tr>
+                    <td class="p-3 border">${u.id}</td>
+                    <td class="p-3 border">${u.username}</td>
+                    <td class="p-3 border">${u.role}</td>
+                    <td class="p-3 border">
+                        <button onclick="delUser(${u.id})" class="text-red-500">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+            document.getElementById('userTable').innerHTML = html;
+        }
+
+        window.delUser = (id) => {
+            if (id === 1) return alert('不能删除超级管理员');
+            let users = JSON.parse(localStorage.getItem('users'));
+            users = users.filter(u => u.id !== id);
+            localStorage.setItem('users', JSON.stringify(users));
+            render();
+        };
+
+        render();
+    </script>
+</body>
+</html>
