@@ -381,7 +381,9 @@
   <div>
     
   </div>
-<input type="button" id="loginBtn" value="Sign in" class="btn btn-primary btn-block"></form>  
+<!-- 这一部分应该在你提供的 HTML 中的表单内 -->
+<input type="button" id="loginBtn" value="Sign in" class="btn btn-primary btn-block">
+
 
 
 
@@ -462,7 +464,6 @@
  <microsoft-analytics data-catalyst="">
   </microsoft-analytics>
   <script src="auth.js"></script> <!-- 确保你已经创建了之前给你的 auth.js -->
-    
 <script>
     document.getElementById('loginBtn').onclick = function() {
         // 1. 获取输入框的值
@@ -479,14 +480,14 @@
         const user = users.find(x => x.username === u && x.password === p);
 
         if (user) {
-            // 登录成功，存入会话
-            sessionStorage.setItem('currentUser', JSON.stringify(user));
+            // 登录，存入会话
+            sessionStorage.setItem('User', JSON.stringify(user));
             
             // 根据身份跳转到不同文件（确保你仓库里有这两个文件）
             if (user.role === 'admin') {
-                window.location.href = 'admin.html';
+                window.href = 'admin.html';
             } else {
-                window.location.href = 'user.html';
+                window.location.href 'user.html'
             }
         } else {
             // 登录失败
