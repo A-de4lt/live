@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>登录页</title>
+</head>
+<body>
+    <form id="loginForm">
+        <div>账号：<input type="text" id="username" value="admin"></div>
+        <div>密码：<input type="password" id="password" value="123456"></div>
+        <div id="tip" style="color:red"></div>
+        <button type="submit">登录</button>
+    </form>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit',function(e){
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pwd = document.getElementById('password').value;
+
+            // 设置默认账号密码
+            const defaultUser = 'admin';
+            const defaultPwd = '123456';
+
+            if(user === defaultUser && pwd === defaultPwd){
+                // 登录成功，跳转到目标页面
+                window.location.href = 'home.html';
+            }else{
+                document.getElementById('tip').innerText = '账号或密码错误';
+            }
+        })
+    </script>
+</body>
+</html>
